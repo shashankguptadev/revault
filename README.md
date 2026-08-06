@@ -37,8 +37,6 @@
 
 ## Screenshots
 
-> Add screenshots here
-
 | Vault | Folder | PIN | Backup |
 |-------|--------|-----|--------|
 | ![]() | ![]() | ![]() | ![]() |
