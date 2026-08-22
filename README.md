@@ -35,14 +35,6 @@
 
 ---
 
-## Screenshots
-
-| Vault | Folder | PIN | Backup |
-|-------|--------|-----|--------|
-| ![]() | ![]() | ![]() | ![]() |
-
----
-
 ## Tech Stack
 
 ### Frontend
