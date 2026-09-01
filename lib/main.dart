@@ -11,17 +11,14 @@ import 'screens/pin_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Hive
   await Hive.initFlutter();
 
-  // Register adapters
   Hive.registerAdapter(FolderAdapter());
   Hive.registerAdapter(AccountDetailsAdapter());
 
-  // Initialize encryption service first
+  // first initialize encryption service then vault service
   await EncryptionService.initialize();
 
-  // Initialize vault service
   await VaultService.init();
 
   runApp(const PasswordVaultApp());
@@ -133,7 +130,7 @@ class _AppLockWrapperState extends State<AppLockWrapper> {
         _isLoading = false;
       });
 
-      // If PIN is set and biometrics are enabled, try biometric authentication
+      // if PIN set & biometrics enabled, try biometric authentication
       if (isPinSet) {
         final biometricEnabled = await PinService.isBiometricEnabled();
         if (biometricEnabled) {
@@ -149,7 +146,7 @@ class _AppLockWrapperState extends State<AppLockWrapper> {
         }
       }
     } catch (e) {
-      // If there's an error reading the PIN, treat as not set
+      // if error reading PIN, treat as not set
       setState(() {
         _isPinSet = false;
         _isLoading = false;
@@ -166,7 +163,6 @@ class _AppLockWrapperState extends State<AppLockWrapper> {
   }
 
   void _onPinVerified(String pin) async {
-    // Skip PIN verification if biometric authentication was used
     if (pin == 'biometric') {
       setState(() {
         _isPinVerified = true;

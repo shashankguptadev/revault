@@ -346,8 +346,7 @@ class VaultScreenState extends State<VaultScreen> {
           obscureText: true,
           decoration: const InputDecoration(
             labelText: 'Enter a strong password',
-            hintText:
-                'This password will be used to encrypt/decrypt the backup',
+            hintText: 'Password for backup file',
           ),
         ),
         actions: [
@@ -366,13 +365,14 @@ class VaultScreenState extends State<VaultScreen> {
     if (confirmed != true) return;
     final backupPassword = passwordController.text.trim();
     if (backupPassword.isEmpty) {
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Password cannot be empty')));
       return;
     }
 
-    // Show loading indicator
+    if (!mounted) return;
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -383,6 +383,7 @@ class VaultScreenState extends State<VaultScreen> {
         ? await BackupService().performBackup(backupPassword)
         : await BackupService().performRestore(backupPassword);
 
+    if (!mounted) return;
     Navigator.pop(context); // remove loader
 
     if (success) {
@@ -396,9 +397,11 @@ class VaultScreenState extends State<VaultScreen> {
         ),
       );
       if (!isBackup) {
-        // Restart the app to reload all data
+        // restart the app to reload all data
         await Future.delayed(const Duration(seconds: 1));
-        // You may use a restart package or simply pop until home and rebuild
+        // pop until home and rebuild
+        if (!mounted) return;
+
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const AppLockWrapper()),
           (route) => false,

@@ -15,32 +15,28 @@ class BackupService {
   static const String _backupFileName = 'revault_backup.enc';
   static const String _backupMimeType = 'application/octet-stream';
 
-  // Defining scopes needed for authorization later
+  static const String _serverClientId = '1044953270653-mj3hrb1laa14iqmisokaqp2itr9t205h.apps.googleusercontent.com';
+
   final List<String> _scopes = [drive.DriveApi.driveFileScope];
 
-  // 1. Singleton pattern access instead of GoogleSignIn(...)
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
-  // Backup: export all data, encrypt with user password, upload to Drive
+  // backup: export all data, encrypt with user password, to drive
   Future<bool> performBackup(String backupPassword) async {
     try {
-      // 2. Modern initialization is required before calling authenticate
-      await _googleSignIn.initialize();
+      await _googleSignIn.initialize(serverClientId: _serverClientId);
 
-      // 3. .signIn() replaced by .authenticate()
       final account = await _googleSignIn.authenticate();
 
-      // 4. Request the explicit scopes from the account's authorization client
       final authorization = await account.authorizationClient.authorizeScopes(
         _scopes,
       );
 
-      // 5. Use the extension method on the authorization instance to build the client
       final authenticateClient = authorization.authClient(scopes: _scopes);
 
       final driveApi = drive.DriveApi(authenticateClient);
 
-      // Gather all data
+      // gather all data
       final foldersMap = <String, Map<String, dynamic>>{};
       for (var folder in VaultService.folderBox.values) {
         foldersMap[folder.key.toString()] = {
@@ -93,12 +89,33 @@ class BackupService {
       final tempFile = File('${tempDir.path}/$_backupFileName');
       await tempFile.writeAsBytes(encryptedBytes);
 
-      final driveFile = drive.File();
-      driveFile.name = _backupFileName;
-      driveFile.mimeType = _backupMimeType;
+      // look for existing backup, if present then overwrite
+      final existing = await driveApi.files.list(
+        q: "name = '$_backupFileName' and trashed = false",
+        spaces: 'drive',
+        $fields: 'files(id, modifiedTime)',
+        orderBy: 'modifiedTime desc',
+      );
 
       final media = drive.Media(tempFile.openRead(), tempFile.lengthSync());
-      await driveApi.files.create(driveFile, uploadMedia: media);
+
+      if (existing.files != null && existing.files!.isNotEmpty) {
+        final fileId =
+            existing.files!.first.id!; // first means the most recently modified
+        await driveApi.files.update(drive.File(), fileId, uploadMedia: media);
+
+        // clean older duplicates
+        for (final extra in existing.files!.skip(1)) {
+          if (extra.id != null) {
+            await driveApi.files.delete(extra.id!);
+          }
+        }
+      } else {
+        final driveFile = drive.File();
+        driveFile.name = _backupFileName;
+        driveFile.mimeType = _backupMimeType;
+        await driveApi.files.create(driveFile, uploadMedia: media);
+      }
 
       if (await tempFile.exists()) {
         await tempFile.delete();
@@ -111,10 +128,10 @@ class BackupService {
     }
   }
 
-  // Restore: download from Drive, decrypt with password, overwrite local data
+  // restore: download from drive, decrypt with password, overwrite local data
   Future<bool> performRestore(String backupPassword) async {
     try {
-      await _googleSignIn.initialize();
+      await _googleSignIn.initialize(serverClientId: _serverClientId);
 
       final account = await _googleSignIn.authenticate();
 
@@ -128,6 +145,8 @@ class BackupService {
       final fileList = await driveApi.files.list(
         q: "name = '$_backupFileName' and trashed = false",
         spaces: 'drive',
+        $fields: 'files(id, modifiedTime)',
+        orderBy: 'modifiedTime desc',
       );
 
       if (fileList.files == null || fileList.files!.isEmpty) {

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — ReVault</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+    line-height: 1.6;
+    color: #1a1a1a;
+    background: #ffffff;
+  }
+  h1 { font-size: 28px; margin-bottom: 4px; }
+  .updated { color: #666; font-size: 14px; margin-bottom: 32px; }
+  h2 { font-size: 20px; margin-top: 36px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
+  p, li { font-size: 16px; }
+  ul { padding-left: 22px; }
+  code {
+    background: #f4f4f4;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  a { color: #2563eb; }
+  .contact { background: #f9fafb; border: 1px solid #eee; border-radius: 8px; padding: 16px 20px; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<h1>Privacy Policy for ReVault</h1>
+<p class="updated">Last updated: September 1, 2026</p>
+
+<p>
+  ReVault ("the app", "we", "our") is a password/credential manager. This policy explains what
+  data ReVault accesses, how it is stored, and what — if anything — leaves your device.
+</p>
+
+<h2>1. Data stored locally on your device</h2>
+<p>
+  ReVault stores your vault (folders, saved accounts, website credentials, and encrypted passwords)
+  locally on your device only. This data is encrypted at rest. We do not operate any server that
+  receives, stores, or has access to your vault contents. We cannot see your saved passwords,
+  and we cannot recover them for you if you lose your device or your local data.
+</p>
+
+<h2>2. Google Drive backup (optional)</h2>
+<p>
+  ReVault offers an optional backup feature. If you choose to use it:
+</p>
+<ul>
+  <li>You sign in with your own Google Account.</li>
+  <li>ReVault encrypts a copy of your vault data using a backup password that only you know, and
+      uploads the encrypted file (named <code>revault_backup.enc</code>) to your own Google Drive.</li>
+  <li>ReVault requests only the
+      <a href="https://developers.google.com/workspace/drive/api/guides/api-specific-auth" target="_blank" rel="noopener">
+      <code>drive.file</code></a> scope from Google. This is a limited, non-sensitive scope that only
+      lets ReVault see and manage the specific backup file it creates — it cannot see, list, or access
+      any other files already in your Drive.</li>
+  <li>If you restore from backup, ReVault downloads that same file from your Drive, decrypts it locally
+      using your backup password, and writes the data back into your local vault.</li>
+  <li>We (the developers) never receive a copy of this file. It travels directly between your device
+      and your own Google Drive.</li>
+</ul>
+<p>
+  Your backup password is never stored or transmitted anywhere, including to us. If you forget it,
+  the backup cannot be decrypted by anyone, including the developers.
+</p>
+
+<h2>3. What we don't do</h2>
+<ul>
+  <li>We don't run analytics or crash-tracking SDKs that collect personal data.</li>
+  <li>We don't show ads or share data with advertisers.</li>
+  <li>We don't sell or share your data with any third party.</li>
+  <li>We don't access any Google Drive files other than the single backup file ReVault itself creates.</li>
+</ul>
+
+<h2>4. Data deletion</h2>
+<p>
+  You can delete your local vault at any time from within the app. You can delete your Drive backup
+  at any time from your own Google Drive, or by revoking ReVault's access at
+  <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">
+  myaccount.google.com/permissions</a>.
+</p>
+
+<h2>5. Changes to this policy</h2>
+<p>
+  If this policy changes, the "Last updated" date at the top of this page will change accordingly.
+  Material changes will also be noted in the app's release notes.
+</p>
+
+<h2>6. Contact</h2>
+<div class="contact">
+  <p style="margin:0;">Questions about this policy or ReVault's data practices? Contact:</p>
+  <p style="margin:8px 0 0;"><strong>Email:</strong> YOUR_SUPPORT_EMAIL@example.com</p>
+</div>
+
+</body>
+</html>

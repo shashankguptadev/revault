@@ -17,7 +17,6 @@ class _AddItemDialogState extends State<AddItemDialog> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  // Add this for password visibility
   bool _obscurePassword = true;
 
   @override
@@ -49,7 +48,6 @@ class _AddItemDialogState extends State<AddItemDialog> {
     }
   }
 
-  // Add this method to toggle password visibility
   void _togglePasswordVisibility() {
     setState(() {
       _obscurePassword = !_obscurePassword;

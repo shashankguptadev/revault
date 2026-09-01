@@ -10,7 +10,7 @@
 
 ### Security
 - AES-256 encrypted password storage
-- 4-digit PIN protection
+- PIN protection
 - Fingerprint / Face ID authentication
 - Secure password encryption and decryption
 - Offline-first architecture

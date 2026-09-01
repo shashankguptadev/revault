@@ -1,4 +1,4 @@
-package com.example.vault_im
+package com.ndevworks.revault
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.plugins.GeneratedPluginRegistrant
