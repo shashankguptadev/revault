@@ -15,7 +15,7 @@ class BackupService {
   static const String _backupFileName = 'revault_backup.enc';
   static const String _backupMimeType = 'application/octet-stream';
 
-  static const String _serverClientId = '1044953270653-mj3hrb1laa14iqmisokaqp2itr9t205h.apps.googleusercontent.com';
+  static const String _serverClientId = '271419887398-9gi4304p45hnlka25pbvfe31h3ho0vim.apps.googleusercontent.com';
 
   final List<String> _scopes = [drive.DriveApi.driveFileScope];
 
