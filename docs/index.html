@@ -3,31 +3,78 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ReVault — Legal</title>
+<title>ReVault — Secure Local Password Manager</title>
+<meta name="description" content="ReVault is a local-first password manager for Android with optional encrypted backup to your own Google Drive.">
 <style>
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    max-width: 600px;
-    margin: 80px auto;
-    text-align: center;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 60px 20px 80px;
+    line-height: 1.6;
     color: #1a1a1a;
+    background: #ffffff;
   }
-  h1 { font-size: 26px; }
-  a {
+  h1 { font-size: 32px; margin-bottom: 4px; }
+  .tagline { color: #555; font-size: 18px; margin-bottom: 32px; }
+  h2 { font-size: 20px; margin-top: 40px; }
+  ul { padding-left: 22px; }
+  li { margin-bottom: 8px; }
+  .links {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid #eee;
+  }
+  .links a {
     display: inline-block;
-    margin: 12px;
-    padding: 12px 24px;
-    background: #2563eb;
-    color: white;
+    margin-right: 20px;
+    color: #2563eb;
     text-decoration: none;
-    border-radius: 8px;
     font-weight: 600;
+  }
+  .links a:hover { text-decoration: underline; }
+  footer {
+    margin-top: 40px;
+    color: #888;
+    font-size: 13px;
   }
 </style>
 </head>
 <body>
-  <h1>ReVault</h1>
+
+<h1>ReVault</h1>
+<p class="tagline">A simple, local-first password manager for Android.</p>
+
+<p>
+  ReVault lets you organize and store your website logins and passwords in folders,
+  right on your device. Your credentials are encrypted and never leave your phone unless
+  you explicitly choose to back them up.
+</p>
+
+<h2>What ReVault does</h2>
+<ul>
+  <li><strong>Local storage first.</strong> Your vault — folders, saved accounts, and encrypted
+      passwords — lives on your device, not on our servers. We don't run a backend that stores
+      your credentials.</li>
+  <li><strong>Optional encrypted Google Drive backup.</strong> You can back up an encrypted copy
+      of your vault to your own Google Drive, protected by a backup password only you know.
+      ReVault only requests access to the single backup file it creates — it cannot see or touch
+      any other files in your Drive.</li>
+  <li><strong>PIN / biometric lock.</strong> Protect access to the app itself with a PIN or your
+      device's biometrics.</li>
+</ul>
+
+<h2>Who makes this</h2>
+<p>
+  ReVault is developed by ndevworks. See our legal documents below for details on data handling.
+</p>
+
+<div class="links">
   <a href="./privacy.html">Privacy Policy</a>
   <a href="./terms.html">Terms of Service</a>
+</div>
+
+<footer>© 2026 ndevworks. ReVault.</footer>
+
 </body>
 </html>
