@@ -446,13 +446,8 @@ class VaultScreenState extends State<VaultScreen> {
         actions: [
           IconButton(
             onPressed: _showSettingsMenu,
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.cloud_circle_outlined),
           ),
-          //   if (widget.currentFolderKey != VaultService.rootFolderKey)
-          //     IconButton(
-          //       icon: const Icon(Icons.arrow_upward),
-          //       onPressed: () => Navigator.of(context).pop(),
-          //     ),
         ],
       ),
       floatingActionButton: CircularMenu(
