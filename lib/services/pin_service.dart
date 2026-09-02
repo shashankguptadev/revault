@@ -16,11 +16,9 @@ class PinService {
   static Future<void> setPin(String pin) async {
     final prefs = await SharedPreferences.getInstance();
 
-    // Generate a random salt for this PIN
     final salt = _generateSalt();
     await prefs.setString(_pinSaltKey, salt);
 
-    // Hash the PIN with salt and encrypt it
     final pinHash = _hashPinWithSalt(pin, salt);
     final encryptedPin = await EncryptionService.encryptPassword(pinHash);
 
@@ -43,10 +41,8 @@ class PinService {
         return false;
       }
 
-      // Hash the input PIN with the stored salt
       final inputPinHash = _hashPinWithSalt(pin, salt);
 
-      // Decrypt the stored PIN and compare
       final storedPinHash = await EncryptionService.decryptPassword(
         encryptedPin,
       );
@@ -60,11 +56,9 @@ class PinService {
   static Future<void> changePin(String newPin) async {
     final prefs = await SharedPreferences.getInstance();
 
-    // Generate new salt
     final newSalt = _generateSalt();
     await prefs.setString(_pinSaltKey, newSalt);
 
-    // Hash and encrypt new PIN
     final newPinHash = _hashPinWithSalt(newPin, newSalt);
     final encryptedNewPin = await EncryptionService.encryptPassword(newPinHash);
 
@@ -129,14 +123,12 @@ class PinService {
     await prefs.remove(_biometricEnabledKey);
   }
 
-  // Generate a random salt
   static String _generateSalt() {
     final random = Random.secure();
     final saltBytes = List<int>.generate(32, (i) => random.nextInt(256));
     return base64.encode(saltBytes);
   }
 
-  // Hash PIN with salt using SHA-256
   static String _hashPinWithSalt(String pin, String salt) {
     final bytes = utf8.encode(pin + salt);
     final digest = sha256.convert(bytes);

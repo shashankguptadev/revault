@@ -128,7 +128,6 @@ class _PinScreenState extends State<PinScreen> {
     );
   }
 
-  // Build biometric toggle card - extracted to a separate method for reusability
   Widget _buildBiometricToggleCard() {
     return Card(
       color: const Color(0xFF1E1E1E),
@@ -201,6 +200,7 @@ class _PinScreenState extends State<PinScreen> {
             if (_isChangingPin) ...[
               TextField(
                 controller: _oldPinController,
+                autofocus: true,
                 keyboardType: TextInputType.number,
                 obscureText: true,
                 maxLength: 4,
@@ -214,6 +214,7 @@ class _PinScreenState extends State<PinScreen> {
             ],
             TextField(
               controller: _pinController,
+              autofocus: !_isChangingPin,
               keyboardType: TextInputType.number,
               obscureText: true,
               maxLength: 4,
@@ -260,7 +261,6 @@ class _PinScreenState extends State<PinScreen> {
               ),
             ),
 
-            // Biometric authentication button (for verification screen)
             if (!widget.isSetup &&
                 !_isChangingPin &&
                 _biometricAvailable &&
@@ -270,7 +270,6 @@ class _PinScreenState extends State<PinScreen> {
                 onPressed: () async {
                   final success = await PinService.authenticateWithBiometrics();
                   if (success && mounted) {
-                    // Simulate PIN verification success
                     widget.onPinVerified!('biometric');
                   } else {
                     _showError('Biometric authentication failed');

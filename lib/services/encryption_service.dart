@@ -112,9 +112,7 @@ class EncryptionService {
     return inputHash == storedHash;
   }
 
-  // Initialize encryption service at app startup
   static Future<void> initialize() async {
-    // Pre-load the key and IV to ensure they're cached
     await _getEncryptionKey();
     await _getIV();
   }
@@ -127,7 +125,6 @@ class EncryptionService {
     final iv = _generateIV();
     final encrypter = Encrypter(AES(key, mode: AESMode.cbc));
     final encrypted = encrypter.encryptBytes(Uint8List.fromList(data), iv: iv);
-    // Prepend IV to the encrypted data
     final result = Uint8List(iv.bytes.length + encrypted.bytes.length)
       ..setAll(0, iv.bytes)
       ..setAll(iv.bytes.length, encrypted.bytes);

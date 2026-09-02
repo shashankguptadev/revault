@@ -64,21 +64,21 @@ class VaultService {
   static Future<void> deleteFolder(int folderKey) async {
     final folder = folderBox.get(folderKey);
     if (folder != null) {
-      // Create copies of the lists to avoid modification during iteration
+      // create copies of the lists to avoid modification during iteration
       final subFolderKeysCopy = List<int>.from(folder.subFolderKeys);
       final accountKeysCopy = List<int>.from(folder.accountKeys);
 
-      // Recursively delete subfolders first
+      // recursively delete subfolders first
       for (final subFolderKey in subFolderKeysCopy) {
         await deleteFolder(subFolderKey);
       }
 
-      // Delete all accounts in this folder
+      // delete all accounts in this folder
       for (final accountKey in accountKeysCopy) {
         await deleteAccount(accountKey);
       }
 
-      // Remove this folder from all parent folders
+      // remove this folder from all parent folders
       final allFolders = folderBox.values.toList();
       for (final parentFolder in allFolders) {
         if (parentFolder.subFolderKeys.contains(folderKey)) {
@@ -87,7 +87,7 @@ class VaultService {
         }
       }
 
-      // Finally delete the folder itself
+      // finally delete the folder itself
       await folderBox.delete(folderKey);
     }
   }
@@ -95,7 +95,7 @@ class VaultService {
   static Future<void> deleteAccount(int accountKey) async {
     final account = accountBox.get(accountKey);
     if (account != null) {
-      // Remove from all parent folders
+      // remove from all parent folders
       final allFolders = folderBox.values.toList();
       for (final parentFolder in allFolders) {
         if (parentFolder.accountKeys.contains(accountKey)) {
@@ -139,7 +139,7 @@ class VaultService {
     }
   }
 
-  // Helper method to get folder counts (for instant updates)
+  // helper method to get folder counts (for instant updates)
   static (int folders, int accounts) getFolderCounts(Folder folder) {
     final subFolders = folder.subFolderKeys
         .map((key) => folderBox.get(key))

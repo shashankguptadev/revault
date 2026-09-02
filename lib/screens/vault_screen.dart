@@ -86,6 +86,7 @@ class VaultScreenState extends State<VaultScreen> {
               children: [
                 TextField(
                   controller: pinController,
+                  autofocus: true,
                   obscureText: true,
                   maxLength: 4,
                   keyboardType: TextInputType.number,
