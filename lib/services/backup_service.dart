@@ -17,17 +17,96 @@ class BackupService {
 
   static const String _serverClientId = '271419887398-9gi4304p45hnlka25pbvfe31h3ho0vim.apps.googleusercontent.com';
 
+  // preference key to remember last used account
+  static const String _prefsDefaultAccountEmailKey =
+      'gdrive_default_account_email';
+
   final List<String> _scopes = [drive.DriveApi.driveFileScope];
 
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
-  // backup: export all data, encrypt with user password, to drive
-  Future<bool> performBackup(String backupPassword) async {
-    try {
-      await _googleSignIn.initialize(serverClientId: _serverClientId);
+  static bool _initialized = false;
 
+  Future<void> _ensureInitialized() async {
+    if (_initialized) return;
+    await _googleSignIn.initialize(serverClientId: _serverClientId);
+    _initialized = true;
+  }
+
+  static Future<String?> getDefaultAccountEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_prefsDefaultAccountEmailKey);
+  }
+
+  static Future<void> _saveDefaultAccountEmail(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_prefsDefaultAccountEmailKey, email);
+  }
+
+  static Future<void> forgetDefaultAccount() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_prefsDefaultAccountEmailKey);
+  }
+
+  Future<GoogleSignInAccount> _resolveAccount({
+    bool forcePicker = false,
+  }) async {
+    await _ensureInitialized();
+
+    if (forcePicker) {
+      try {
+        await _googleSignIn.signOut();
+      } catch (_) {
+        // ignoring, proceed to show the picker
+      }
       final account = await _googleSignIn.authenticate();
+      await _saveDefaultAccountEmail(account.email);
+      return account;
+    }
 
+    final savedEmail = await getDefaultAccountEmail();
+    if (savedEmail != null) {
+      try {
+        final lightweightAccount = await _googleSignIn
+            .attemptLightweightAuthentication();
+        if (lightweightAccount != null) {
+          await _saveDefaultAccountEmail(lightweightAccount.email);
+          return lightweightAccount;
+        }
+      } catch (e) {
+        debugPrint('Silent sign-in failed, falling back to picker: $e');
+      }
+    }
+
+    final account = await _googleSignIn.authenticate();
+    await _saveDefaultAccountEmail(account.email);
+    return account;
+  }
+
+  Future<GoogleSignInAccount?> getOrPickDefaultAccount() async {
+    try {
+      return await _resolveAccount();
+    } catch (e) {
+      debugPrint('Account resolution error: $e');
+      return null;
+    }
+  }
+
+  Future<GoogleSignInAccount?> pickAccount() async {
+    try {
+      return await _resolveAccount(forcePicker: true);
+    } catch (e) {
+      debugPrint('Account selection error: $e');
+      return null;
+    }
+  }
+
+  // backup: export all data, encrypt with user password, to drive
+  Future<bool> performBackup(
+    String backupPassword,
+    GoogleSignInAccount account,
+  ) async {
+    try {
       final authorization = await account.authorizationClient.authorizeScopes(
         _scopes,
       );
@@ -129,12 +208,11 @@ class BackupService {
   }
 
   // restore: download from drive, decrypt with password, overwrite local data
-  Future<bool> performRestore(String backupPassword) async {
+  Future<bool> performRestore(
+    String backupPassword,
+    GoogleSignInAccount account,
+  ) async {
     try {
-      await _googleSignIn.initialize(serverClientId: _serverClientId);
-
-      final account = await _googleSignIn.authenticate();
-
       final authorization = await account.authorizationClient.authorizeScopes(
         _scopes,
       );
@@ -184,7 +262,16 @@ class BackupService {
 
       await VaultService.clearAllData();
       final prefs = await SharedPreferences.getInstance();
+      final rememberedAccountEmail = prefs.getString(
+        _prefsDefaultAccountEmailKey,
+      );
       await prefs.clear();
+      if (rememberedAccountEmail != null) {
+        await prefs.setString(
+          _prefsDefaultAccountEmailKey,
+          rememberedAccountEmail,
+        );
+      }
 
       final encryptionKey = backupData['encryptionKey'] as String;
       final encryptionIV = backupData['encryptionIV'] as String;
@@ -246,5 +333,6 @@ class BackupService {
 
   Future<void> signOut() async {
     await _googleSignIn.signOut();
+    await forgetDefaultAccount();
   }
 }

@@ -7,7 +7,7 @@ import '../services/vault_service.dart';
 import '../services/pin_service.dart';
 import '../services/backup_service.dart';
 
-// Importing components
+// components
 import '../widgets/folder_tile.dart';
 import '../widgets/account_tile.dart';
 import '../widgets/create_folder_dialog.dart';
@@ -298,15 +298,39 @@ class VaultScreenState extends State<VaultScreen> {
     }
   }
 
-  void _showSettingsMenu() {
+  void _showSettingsMenu() async {
+    final defaultAccountEmail = await BackupService.getDefaultAccountEmail();
+    if (!mounted) return;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(context).dialogTheme.backgroundColor,
-        title: const Text('Settings', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Backup & Restore',
+          style: TextStyle(color: Colors.white),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            ListTile(
+              leading: const Icon(Icons.account_circle, color: Colors.orange),
+              title: Text(
+                defaultAccountEmail ?? 'No default Google account',
+                style: const TextStyle(color: Colors.white),
+              ),
+              subtitle: Text(
+                defaultAccountEmail == null
+                    ? 'Choose default account for backup/restore'
+                    : 'Tap to change',
+                style: const TextStyle(color: Colors.grey),
+              ),
+              onTap: () async {
+                Navigator.pop(context);
+                await _changeDefaultAccount();
+              },
+            ),
+            const Divider(),
             ListTile(
               leading: const Icon(Icons.backup, color: Colors.blue),
               title: const Text('Backup to Google Drive'),
@@ -335,42 +359,118 @@ class VaultScreenState extends State<VaultScreen> {
     );
   }
 
-  Future<void> _performBackupRestore({required bool isBackup}) async {
+  Future<void> _changeDefaultAccount() async {
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final account = await BackupService().pickAccount();
+
+    if (!mounted) return;
+    Navigator.pop(context); // remove loader
+
+    if (!mounted) return;
+    if (account != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Default account set to ${account.email}')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not change the default account'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<String?> _askBackupPassword({required bool isBackup}) async {
     final passwordController = TextEditingController();
+    bool obscureText = true;
+
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(isBackup ? 'Backup Password' : 'Restore Password'),
-        content: TextField(
-          controller: passwordController,
-          obscureText: true,
-          decoration: const InputDecoration(
-            labelText: 'Enter a strong password',
-            hintText: 'Password for backup file',
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(isBackup ? 'Backup Password' : 'Restore Password'),
+          content: TextField(
+            controller: passwordController,
+            obscureText: obscureText,
+            autofocus: true,
+            decoration: InputDecoration(
+              labelText: isBackup
+                  ? 'Set a password for the backup file'
+                  : 'Enter the backup file password',
+              hintText: isBackup
+                  ? 'Password for backup file'
+                  : 'Password to unlock backup file',
+              suffixIcon: IconButton(
+                icon: Icon(
+                  obscureText ? Icons.visibility_off : Icons.visibility,
+                ),
+                onPressed: () {
+                  setDialogState(() => obscureText = !obscureText);
+                },
+              ),
+            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(isBackup ? 'Backup' : 'Restore'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(isBackup ? 'Backup' : 'Restore'),
-          ),
-        ],
       ),
     );
 
-    if (confirmed != true) return;
+    if (confirmed != true) return null;
     final backupPassword = passwordController.text.trim();
     if (backupPassword.isEmpty) {
-      if (!mounted) return;
+      if (!mounted) return null;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Password cannot be empty')));
+      return null;
+    }
+    return backupPassword;
+  }
+
+  Future<void> _performBackupRestore({required bool isBackup}) async {
+    final backupService = BackupService();
+
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final account = await backupService.getOrPickDefaultAccount();
+
+    if (!mounted) return;
+    Navigator.pop(context);
+
+    if (account == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Google sign-in was cancelled or failed'),
+          backgroundColor: Colors.red,
+        ),
+      );
       return;
     }
+
+    final backupPassword = await _askBackupPassword(isBackup: isBackup);
+    if (backupPassword == null) return;
 
     if (!mounted) return;
     showDialog(
@@ -380,11 +480,11 @@ class VaultScreenState extends State<VaultScreen> {
     );
 
     final success = isBackup
-        ? await BackupService().performBackup(backupPassword)
-        : await BackupService().performRestore(backupPassword);
+        ? await backupService.performBackup(backupPassword, account)
+        : await backupService.performRestore(backupPassword, account);
 
     if (!mounted) return;
-    Navigator.pop(context); // remove loader
+    Navigator.pop(context);
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -446,7 +546,7 @@ class VaultScreenState extends State<VaultScreen> {
         actions: [
           IconButton(
             onPressed: _showSettingsMenu,
-            icon: const Icon(Icons.cloud_circle_outlined),
+            icon: const Icon(Icons.cloud_outlined),
           ),
         ],
       ),
